@@ -16,4 +16,6 @@ suites:
   - name: default
     run_list:
       - recipe[openvpn_okta]
-    attributes:
+  - name: remove
+    run_list:
+      - recipe[openvpn_okta_test::remove]
