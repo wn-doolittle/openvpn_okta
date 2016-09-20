@@ -19,4 +19,13 @@
 # limitations under the License.
 #
 
-openvpn_okta 'default'
+attrs = node['openvpn_okta']
+
+openvpn_okta 'default' do
+  url attrs['url'] unless attrs['url'].nil?
+  token attrs['token'] unless attrs['token'].nil?
+  username_suffix attrs['username_suffix'] unless attrs['username_suffix'].nil?
+  unless attrs['allow_untrusted_users'].nil?
+    allow_untrusted_users attrs['allow_untrusted_users']
+  end
+end

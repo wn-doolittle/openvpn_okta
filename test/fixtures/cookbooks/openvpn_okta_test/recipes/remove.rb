@@ -4,5 +4,5 @@
 include_recipe 'openvpn_okta'
 
 openvpn_okta 'default' do
-  action :remove
+  action %i(disable remove)
 end
