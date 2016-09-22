@@ -74,8 +74,8 @@ shared_context 'resources::openvpn_okta' do
         expect(chef_run.openvpn_conf('server')).to do_nothing
         expect(chef_run.openvpn_conf('server').plugins).to eq(
           [
-            '/usr/lib/openvpn/plugins/defer_simple.so ' \
-            "/usr/lib/openvpn/plugins/okta_openvpn.py\n" \
+            '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
+            "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
             'tmp-dir "/etc/openvpn/tmp"'
           ]
         )
@@ -123,8 +123,8 @@ shared_context 'resources::openvpn_okta' do
           expect(chef_run.openvpn_conf('server')).to do_nothing
           expect(chef_run.openvpn_conf('server').plugins).to eq(
             [
-              '/usr/lib/openvpn/plugins/defer_simple.so ' \
-              "/usr/lib/openvpn/plugins/okta_openvpn.py\n" \
+              '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
+              "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
               'tmp-dir "/etc/openvpn/tmp"'
             ]
           )

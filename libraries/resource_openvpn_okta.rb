@@ -75,8 +75,8 @@ class Chef
           content lines.join("\n")
         end
 
-        p = '/usr/lib/openvpn/plugins/defer_simple.so ' \
-          "/usr/lib/openvpn/plugins/okta_openvpn.py\n" \
+        p = '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
+          "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
           'tmp-dir "/etc/openvpn/tmp"'
         with_run_context :root do
           edit_resource :openvpn_conf, 'server' do
@@ -94,8 +94,8 @@ class Chef
       # config.
       #
       action :disable do
-        p = '/usr/lib/openvpn/plugins/defer_simple.so ' \
-          "/usr/lib/openvpn/plugins/okta_openvpn.py\n" \
+        p = '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
+          "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
           'tmp-dir "/etc/openvpn/tmp"'
         with_run_context :root do
           edit_resource :openvpn_conf, 'server' do

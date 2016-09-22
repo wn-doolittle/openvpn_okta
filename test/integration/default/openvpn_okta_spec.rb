@@ -28,8 +28,9 @@ control 'openvpn_okta' do
 
   describe file('/etc/openvpn/server.conf') do
     it 'has the Okta plugin configured' do
-      rs = [Regexp.new('^plugin /usr/lib/openvpn/plugins/defer_simple\\.so ' \
-                       '/usr/lib/openvpn/plugins/okta_openvpn\.py$'),
+      rs = [Regexp.new('^plugin /usr/lib/openvpn/plugins/okta/' \
+                       'defer_simple\\.so ' \
+                       '/usr/lib/openvpn/plugins/okta/okta_openvpn\.py$'),
             Regexp.new('^tmp-dir "/etc/openvpn/tmp"$')]
       rs.each { |r| expect(subject.content).to match(r) }
     end
