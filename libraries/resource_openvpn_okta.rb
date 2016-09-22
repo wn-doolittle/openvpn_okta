@@ -55,6 +55,8 @@ class Chef
           end
         end
 
+        include_recipe 'openvpn'
+
         directory '/etc/openvpn/tmp' do
           owner new_resource.user
           group new_resource.group

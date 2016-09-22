@@ -16,10 +16,6 @@ suites:
   - name: default
     run_list:
       - recipe[openvpn_okta_test]
-    attributes:
-      openvpn_okta:
-        url: example.com
-        token: abc123
   - name: remove
     run_list:
       - recipe[openvpn_okta_test::remove]

@@ -53,6 +53,10 @@ shared_context 'resources::openvpn_okta' do
         expect(chef_run).to install_package('okta-openvpn')
       end
 
+      it 'includes the openvpn cookbook' do
+        expect(chef_run).to include_recipe('openvpn')
+      end
+
       it 'creates the OpenVPN temp dir' do
         expect(chef_run).to create_directory('/etc/openvpn/tmp')
           .with(user: 'nobody', group: 'nogroup')
@@ -99,6 +103,10 @@ shared_context 'resources::openvpn_okta' do
       include_context description
 
       shared_examples_for 'any valid property set' do
+        it 'includes the openvpn cookbook' do
+          expect(chef_run).to include_recipe('openvpn')
+        end
+
         it 'creates the OpenVPN temp dir' do
           expect(chef_run).to create_directory('/etc/openvpn/tmp')
             .with(user: user || 'nobody', group: group || 'nogroup')
