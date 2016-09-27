@@ -17,6 +17,16 @@ describe 'openvpn_okta::default' do
   end
   let(:chef_run) { runner.converge(described_recipe) }
 
+  shared_examples_for 'any attribute set' do
+    it 'includes the openvpn cookbook' do
+      expect(chef_run).to include_recipe('openvpn')
+    end
+
+    it 'modifies the openvpn_conf resource' do
+      expect(chef_run.openvpn_conf('server')).to do_nothing
+    end
+  end
+
   context 'all required attributes' do
     let(:url) { 'example.com' }
     let(:token) { 'abc123' }

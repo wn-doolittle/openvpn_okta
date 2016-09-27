@@ -85,9 +85,9 @@ class Chef
             plugins.include?(p) || plugins << p
             action :nothing
           end
-        end
-        log 'Generate the OpenVPN config with Okta enabled' do
-          notifies :create, 'openvpn_conf[server]'
+          log 'Generate the OpenVPN config with Okta enabled' do
+            notifies :create, 'openvpn_conf[server]'
+          end
         end
       end
 
@@ -104,9 +104,9 @@ class Chef
             plugins.delete(p)
             action :nothing
           end
-        end
-        log 'Generate the OpenVPN config with Okta disabled' do
-          notifies :create, 'openvpn_conf[server]'
+          log 'Generate the OpenVPN config with Okta disabled' do
+            notifies :create, 'openvpn_conf[server]'
+          end
         end
 
         file('/etc/openvpn/okta_openvpn.ini') { action :delete }
