@@ -85,8 +85,13 @@ class Chef
             plugins.include?(p) || plugins << p
             action :nothing
           end
-          log 'Generate the OpenVPN config with Okta enabled' do
+          edit_resource :service, 'openvpn' do
+            action :nothing
+          end
+          log 'Perform the OpenVPN actions delayed by Okta' do
             notifies :create, 'openvpn_conf[server]'
+            notifies :enable, 'service[openvpn]'
+            notifies :start, 'service[openvpn]'
           end
         end
       end

@@ -27,6 +27,10 @@ edit_resource :openvpn_conf, 'server' do
   action :nothing
 end
 
+edit_resource :service, 'openvpn' do
+  action :nothing
+end
+
 openvpn_okta 'default' do
   url attrs['url'] unless attrs['url'].nil?
   token attrs['token'] unless attrs['token'].nil?

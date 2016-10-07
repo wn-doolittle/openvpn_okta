@@ -6,6 +6,8 @@ require_relative '../openvpn_okta'
 shared_context 'resources::openvpn_okta::debian' do
   include_context 'resources::openvpn_okta'
 
+  let(:openvpn_group) { 'nogroup' }
+
   shared_examples_for 'any Debian platform' do
     it_behaves_like 'any platform'
 

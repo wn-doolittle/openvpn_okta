@@ -25,6 +25,10 @@ describe 'openvpn_okta::default' do
     it 'modifies the openvpn_conf resource' do
       expect(chef_run.openvpn_conf('server')).to do_nothing
     end
+
+    it 'modifies the openvpn service resource' do
+      expect(chef_run.service('openvpn')).to do_nothing
+    end
   end
 
   context 'all required attributes' do

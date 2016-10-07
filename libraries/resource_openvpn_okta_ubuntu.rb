@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 #
 # Cookbook Name:: openvpn_okta
-# Library:: resource_openvpn_okta
+# Library:: resource_openvpn_okta_ubuntu
 #
 # Copyright 2016, Socrata, Inc.
 #
