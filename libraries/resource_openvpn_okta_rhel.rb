@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 #
 # Cookbook Name:: openvpn_okta
-# Library:: resource_openvpn_okta_ubuntu
+# Library:: resource_openvpn_okta_rhel
 #
 # Copyright 2016, Socrata, Inc.
 #
@@ -23,17 +23,17 @@ require_relative 'resource_openvpn_okta'
 
 class Chef
   class Resource
-    # A Chef custom resource for the OpenVPN Okta plugin for Ubuntu.
+    # A Chef custom resource for the OpenVPN Okta plugin for RHEL.
     #
     # @author Jonathan Hartman <jonathan.hartman@socrata.com>
-    class OpenvpnOktaUbuntu < OpenvpnOkta
-      provides :openvpn_okta, platform: 'ubuntu'
+    class OpenvpnOktaRhel < OpenvpnOkta
+      provides :openvpn_okta, platform_family: 'rhel'
 
       #
       # Install the OpenVPN Okta plugin.
       #
       action :install do
-        packagecloud_repo('socrata-platform/okta-openvpn') { type 'deb' }
+        packagecloud_repo('socrata-platform/okta-openvpn') { type 'rpm' }
         super()
       end
 
@@ -41,8 +41,8 @@ class Chef
       # Remove the OpenVPN Okta plugin.
       #
       action :remove do
-        package('okta-openvpn') { action :purge }
-        apt_repository('socrata-platform_okta-openvpn') { action :remove }
+        package('okta-openvpn') { action :remove }
+        yum_repository('socrata-platform_okta-openvpn') { action :remove }
       end
     end
   end

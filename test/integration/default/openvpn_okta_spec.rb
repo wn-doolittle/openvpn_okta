@@ -8,15 +8,27 @@ control 'openvpn_okta' do
   title 'OpenVPN Okta: Plugin is installed and configured'
   desc 'The OpenVPN Okta plugin is installed and configured'
 
-  describe apt(
-    'https://packagecloud.io/socrata-platform/okta-openvpn/ubuntu'
-  ) do
-    it 'exists' do
-      expect(subject).to exist
-    end
+  case os[:family]
+  when 'debian'
+    describe apt('https://packagecloud.io/socrata-platform/okta-openvpn/' \
+                 'ubuntu') do
+      it 'exists' do
+        expect(subject).to exist
+      end
 
-    it 'is enabled' do
-      expect(subject).to be_enabled
+      it 'is enabled' do
+        expect(subject).to be_enabled
+      end
+    end
+  when 'rhel'
+    describe yum.repo('socrata-platform_okta-openvpn') do
+      it 'exists' do
+        expect(subject).to exist
+      end
+
+      it 'is enabled' do
+        expect(subject).to be_enabled
+      end
     end
   end
 

@@ -3,43 +3,43 @@
 
 require_relative '../openvpn_okta'
 
-shared_context 'resources::openvpn_okta::debian' do
+shared_context 'resources::openvpn_okta::rhel' do
   include_context 'resources::openvpn_okta'
 
-  let(:openvpn_group) { 'nogroup' }
+  let(:openvpn_group) { 'nobody' }
 
-  shared_examples_for 'any Debian platform' do
+  shared_examples_for 'any RHEL platform' do
     it_behaves_like 'any platform'
 
     context 'the default action (:install, :enable)' do
       include_context description
 
-      it 'configures the PackageCloud APT repo' do
+      it 'configures the PackageCloud YUM repo' do
         expect(chef_run).to create_packagecloud_repo(
           'socrata-platform/okta-openvpn'
-        ).with(type: 'deb')
+        ).with(type: 'rpm')
       end
     end
 
     context 'the :install action' do
       include_context description
 
-      it 'configures the PackageCloud APT repo' do
+      it 'configures the PackageCloud YUM repo' do
         expect(chef_run).to create_packagecloud_repo(
           'socrata-platform/okta-openvpn'
-        ).with(type: 'deb')
+        ).with(type: 'rpm')
       end
     end
 
     context 'the :remove action' do
       include_context description
 
-      it 'purges the okta-openvpn package' do
-        expect(chef_run).to purge_package('okta-openvpn')
+      it 'removes the okta-openvpn package' do
+        expect(chef_run).to remove_package('okta-openvpn')
       end
 
       it 'removes the PackageCloud APT repo' do
-        expect(chef_run).to remove_apt_repository(
+        expect(chef_run).to remove_yum_repository(
           'socrata-platform_okta-openvpn'
         )
       end

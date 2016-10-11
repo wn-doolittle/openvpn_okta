@@ -8,11 +8,19 @@ control 'openvpn_okta_app' do
   title 'OpenVPN Okta: Plugin is uninstalled'
   desc 'The OpenVPN Okta plugin is uninstalled'
 
-  describe apt(
-    'https://packagecloud.io/socrata-platform/duo-openvpn/ubuntu'
-  ) do
-    it 'does not exist' do
-      expect(subject).to_not exist
+  case os[:family]
+  when 'debian'
+    describe apt('https://packagecloud.io/socrata-platform/duo-openvpn/' \
+                 'ubuntu') do
+      it 'does not exist' do
+        expect(subject).to_not exist
+      end
+    end
+  when 'rhel'
+    describe yum.repo('socrata-platform_okta-openvpn') do
+      it 'does not exist' do
+        expect(subject).to_not exist
+      end
     end
   end
 
