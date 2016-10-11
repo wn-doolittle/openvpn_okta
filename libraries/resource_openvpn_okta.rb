@@ -19,6 +19,7 @@
 # limitations under the License.
 #
 
+require 'chef/dsl/include_recipe'
 require 'chef/resource'
 
 class Chef
@@ -27,6 +28,8 @@ class Chef
     #
     # @author Jonathan Hartman <jonathan.hartman@socrata.com>
     class OpenvpnOkta < Resource
+      include Chef::DSL::IncludeRecipe
+
       default_action %i(install enable)
 
       property :url, String
@@ -38,6 +41,52 @@ class Chef
       property :group, String, default: lazy { node['openvpn']['group'] }
 
       #
+      # If the resource is to be enabled, shove the plugin into the root run
+      # context's config resource at compile time so it only gets rendered once
+      # and service notifications don't happen in an impossible order.
+      #
+      def after_created
+        Array(action).each do |act|
+          case act
+          when :enable
+            enable_plugin_shim!
+          when :disable
+            disable_plugin_shim!
+          end
+        end
+      end
+
+      #
+      # Include the OpenVPN cookbook and immediatelyh add the Okta plugin to
+      # its openvpn_conf resource.
+      #
+      def enable_plugin_shim!
+        disable_plugin_shim!
+        resources(openvpn_conf: 'server').plugins << plugin_str
+      end
+
+      #
+      # Include the OpenVPN cookbook and immediately remove the Okta plugin
+      # from its openvpn_conf resource.
+      #
+      def disable_plugin_shim!
+        include_recipe 'openvpn'
+        resources(openvpn_conf: 'server').plugins.delete(plugin_str)
+      end
+
+      #
+      # Return the plugin string that gets added to or removed from the
+      # openvpn_conf resource to enable or disable the plugin.
+      #
+      # @return [String] the plugin string
+      #
+      def plugin_str
+        '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
+          "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
+          'tmp-dir "/etc/openvpn/tmp"'
+      end
+
+      #
       # Install the OpenVPN Okta plugin.
       #
       action :install do
@@ -46,6 +95,8 @@ class Chef
 
       #
       # Enable the Okta plugin by inserting it into OpenVPN's server config.
+      # The enable action works on combination with the openvpn_conf resource
+      # shim in the after_created method.
       #
       action :enable do
         %i(url token).each do |p|
@@ -54,8 +105,6 @@ class Chef
                   "A '#{p}' property is required for the :enable action")
           end
         end
-
-        include_recipe 'openvpn'
 
         directory '/etc/openvpn/tmp' do
           owner new_resource.user
@@ -76,44 +125,15 @@ class Chef
           end
           content lines.join("\n")
         end
-
-        p = '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
-          "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
-          'tmp-dir "/etc/openvpn/tmp"'
-        with_run_context :root do
-          edit_resource :openvpn_conf, 'server' do
-            plugins.include?(p) || plugins << p
-            action :nothing
-          end
-          edit_resource :service, 'openvpn' do
-            action :nothing
-          end
-          log 'Perform the OpenVPN actions delayed by Okta' do
-            notifies :create, 'openvpn_conf[server]'
-            notifies :enable, 'service[openvpn]'
-            notifies :start, 'service[openvpn]'
-          end
-        end
       end
 
       #
       # Ensure the plugin is removed from the plugins array for the OpenVPN
-      # config.
+      # config. This action doesn't actually need to do anything to clean up
+      # the OpenVPN config, since after_created will not add the plugin line to
+      # it except for in the case of an :enable action.
       #
       action :disable do
-        p = '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
-          "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
-          'tmp-dir "/etc/openvpn/tmp"'
-        with_run_context :root do
-          edit_resource :openvpn_conf, 'server' do
-            plugins.delete(p)
-            action :nothing
-          end
-          log 'Generate the OpenVPN config with Okta disabled' do
-            notifies :create, 'openvpn_conf[server]'
-          end
-        end
-
         file('/etc/openvpn/okta_openvpn.ini') { action :delete }
         directory('/etc/openvpn/tmp') do
           recursive true
