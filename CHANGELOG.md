@@ -1,6 +1,9 @@
 Openvpn_Okta Cookbook CHANGELOG
 ===============================
 
+Unreleased
+----------
+
 v0.1.0 (2016-10-11)
 -------------------
 - Initial release
