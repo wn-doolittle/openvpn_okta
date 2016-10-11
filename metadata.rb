@@ -7,7 +7,7 @@ maintainer_email 'jonathan.hartman@socrata.com'
 license 'apachev2'
 description 'Installs/configures the OpenVPN Okta plugin'
 long_description 'Installs/configures the OpenVPN Okta plugin'
-version '0.0.1'
+version '0.1.0'
 
 source_url 'https://github.com/socrata-cookbooks/openvpn_okta'
 issues_url 'https://github.com/socrata-cookbooks/openvpn_okta/issues'
