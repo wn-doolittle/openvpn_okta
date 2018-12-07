@@ -32,10 +32,8 @@ shared_context 'openvpn_okta' do
       default_attributes['test']['action'] = :enable
 
       shared_examples_for 'any valid property set' do
-        it { is_expected.to include_recipe('openvpn') }
-
         it do
-          expect(chef_run.openvpn_conf('server').plugins).to eq(
+          expect(chef_run.openvpn_conf('server').config['plugin']).to eq(
             [
               '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
               "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
@@ -191,8 +189,7 @@ shared_context 'openvpn_okta' do
     context 'the :disable action' do
       default_attributes['test']['action'] = :disable
 
-      it { is_expected.to include_recipe('openvpn') }
-      it { expect(chef_run.openvpn_conf('server').plugins).to eq([]) }
+      it { expect(chef_run.openvpn_conf('server')).to eq(nil) }
       it { is_expected.to delete_file('/etc/openvpn/okta_openvpn.ini') }
 
       it do

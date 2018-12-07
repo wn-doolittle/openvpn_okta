@@ -19,7 +19,7 @@
 # limitations under the License.
 #
 
-require 'chef/dsl/include_recipe'
+require 'chef/dsl/declare_resource'
 require 'chef/resource'
 
 class Chef
@@ -28,7 +28,7 @@ class Chef
     #
     # @author Jonathan Hartman <jonathan.hartman@tylertech.com>
     class OpenvpnOkta < Resource
-      include Chef::DSL::IncludeRecipe
+      include Chef::DSL::DeclareResource
 
       provides :openvpn_okta do |_node|
         false
@@ -61,24 +61,29 @@ class Chef
       end
 
       #
-      # Include the OpenVPN cookbook and immediatelyh add the Okta plugin to
-      # its openvpn_conf resource.
+      # Declare an openvpn_conf resource if one hasn't already been defined and
+      # add the Okta plugin to its config.
       #
       def enable_plugin_shim!
-        disable_plugin_shim!
-        plugs = resources(openvpn_conf: 'server').plugins.dup << plugin_str
-        resources(openvpn_conf: 'server').plugins(plugs)
+        srvr = declare_resource(:openvpn_conf, 'server')
+        srvr.sensitive(true)
+        conf = srvr.config && srvr.config.dup || {}
+        conf['plugin'] ||= []
+        conf['plugin'] << plugin_str
+        srvr.config(conf)
       end
 
       #
-      # Include the OpenVPN cookbook and immediately remove the Okta plugin
-      # from its openvpn_conf resource.
+      # If an openvpn_conf resource exists, ensure the Okta plugin is removed
+      # from its config. Otherwise, do nothing.
       #
       def disable_plugin_shim!
-        include_recipe 'openvpn'
-        plugs = resources(openvpn_conf: 'server').plugins.dup
-        plugs.delete(plugin_str)
-        resources(openvpn_conf: 'server').plugins(plugs)
+        srvr = find_resource(:openvpn_conf, 'server')
+        return unless srvr && srvr.config && srvr.config['plugin']
+
+        conf = srvr.config.dup
+        conf['plugin'].delete(plugin_str)
+        srvr.config(conf)
       end
 
       #

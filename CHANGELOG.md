@@ -6,6 +6,7 @@ This file is used to list changes made in each version of the openvpn_okta cookb
 
 - Update boilerplate and resolve all style offenses
 - Support the latest packagecloud cookbook
+- Upgrade to the latest openvpn cookbook
 
 ## 0.1.0 (2016-10-11)
 

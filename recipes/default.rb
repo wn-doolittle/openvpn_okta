@@ -21,17 +21,6 @@
 
 attrs = node['openvpn_okta']
 
-include_recipe 'openvpn'
-
-edit_resource :service, 'openvpn' do
-  action :nothing
-end
-
-log "Perform OpenVPN service actions delayed by #{cookbook_name}" do
-  notifies :enable, 'service[openvpn]'
-  notifies :start, 'service[openvpn]'
-end
-
 openvpn_okta 'default' do
   url attrs['url'] unless attrs['url'].nil?
   token attrs['token'] unless attrs['token'].nil?
