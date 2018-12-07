@@ -12,6 +12,8 @@ describe 'openvpn_okta::rhel' do
   context 'the :install action' do
     default_attributes['test']['action'] = :install
 
+    it { is_expected.to install_package('gnupg') }
+
     it do
       is_expected.to create_packagecloud_repo('socrata-platform/okta-openvpn')
         .with(type: 'rpm')

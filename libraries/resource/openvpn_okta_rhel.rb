@@ -33,6 +33,7 @@ class Chef
       # Install the OpenVPN Okta plugin.
       #
       action :install do
+        package 'gnupg'
         packagecloud_repo('socrata-platform/okta-openvpn') { type 'rpm' }
         super()
       end
