@@ -1,13 +1,15 @@
-Openvpn_Okta Cookbook CHANGELOG
-===============================
+# Openvpn Okta Cookbook CHANGELOG
 
-Unreleased
-----------
+This file is used to list changes made in each version of the openvpn_okta cookbook.
 
-v0.1.0 (2016-10-11)
--------------------
+## 1.0.0 (2018-12-07)
+
+- Update boilerplate and resolve all style offenses
+
+## 0.1.0 (2016-10-11)
+
 - Initial release
 
-v0.0.1 (2016-09-19)
--------------------
+## 0.0.1 (2016-09-19)
+
 - Development started

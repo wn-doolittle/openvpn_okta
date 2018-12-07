@@ -1,8 +1,8 @@
-# encoding: utf-8
 # frozen_string_literal: true
+
 #
-# Cookbook Name:: openvpn_okta
-# Library:: resource_openvpn_okta
+# Cookbook:: openvpn_okta
+# Library:: resource/openvpn_okta
 #
 # Copyright 2016, Socrata, Inc.
 #
@@ -26,11 +26,15 @@ class Chef
   class Resource
     # A Chef custom resource for the OpenVPN Okta plugin.
     #
-    # @author Jonathan Hartman <jonathan.hartman@socrata.com>
+    # @author Jonathan Hartman <jonathan.hartman@tylertech.com>
     class OpenvpnOkta < Resource
       include Chef::DSL::IncludeRecipe
 
-      default_action %i(install enable)
+      provides :openvpn_okta do |_node|
+        false
+      end
+
+      default_action %i[install enable]
 
       property :url, String
       property :token, String
@@ -62,7 +66,8 @@ class Chef
       #
       def enable_plugin_shim!
         disable_plugin_shim!
-        resources(openvpn_conf: 'server').plugins << plugin_str
+        plugs = resources(openvpn_conf: 'server').plugins.dup << plugin_str
+        resources(openvpn_conf: 'server').plugins(plugs)
       end
 
       #
@@ -71,7 +76,9 @@ class Chef
       #
       def disable_plugin_shim!
         include_recipe 'openvpn'
-        resources(openvpn_conf: 'server').plugins.delete(plugin_str)
+        plugs = resources(openvpn_conf: 'server').plugins.dup
+        plugs.delete(plugin_str)
+        resources(openvpn_conf: 'server').plugins(plugs)
       end
 
       #
@@ -99,7 +106,7 @@ class Chef
       # shim in the after_created method.
       #
       action :enable do
-        %i(url token).each do |p|
+        %i[url token].each do |p|
           if new_resource.send(p).nil?
             raise(Chef::Exceptions::ValidationFailed,
                   "A '#{p}' property is required for the :enable action")

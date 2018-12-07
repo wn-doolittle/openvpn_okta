@@ -1,10 +1,9 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
 name 'openvpn_okta'
-maintainer 'Jonathan Hartman'
-maintainer_email 'jonathan.hartman@socrata.com'
-license 'apachev2'
+maintainer 'Socrata Engineering'
+maintainer_email 'sysadmin@socrata.com'
+license 'Apache-2.0'
 description 'Installs/configures the OpenVPN Okta plugin'
 long_description 'Installs/configures the OpenVPN Okta plugin'
 version '0.1.1'

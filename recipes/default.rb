@@ -1,7 +1,7 @@
-# encoding: utf-8
 # frozen_string_literal: true
+
 #
-# Cookbook Name:: openvpn_okta
+# Cookbook:: openvpn_okta
 # Recipe:: default
 #
 # Copyright 2016, Socrata, Inc.

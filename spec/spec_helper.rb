@@ -1,26 +1,17 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
-require 'chef'
 require 'chefspec'
 require 'chefspec/berkshelf'
 require 'simplecov'
 require 'simplecov-console'
-require 'coveralls'
-require_relative 'support/matchers'
 
 RSpec.configure do |c|
-  c.color = true
+  c.add_setting :supported_platforms, default: {
+    debian: %w[9.3 8.10],
+    ubuntu: %w[18.04 16.04 14.04]
+  }
 end
 
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-  [
-    Coveralls::SimpleCov::Formatter,
-    SimpleCov::Formatter::HTMLFormatter,
-    SimpleCov::Formatter::Console
-  ]
-)
+SimpleCov.formatter = SimpleCov::Formatter::Console
 SimpleCov.minimum_coverage(100)
 SimpleCov.start
-
-at_exit { ChefSpec::Coverage.report! }
