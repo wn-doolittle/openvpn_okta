@@ -13,7 +13,7 @@ issues_url 'https://github.com/socrata-cookbooks/openvpn_okta/issues'
 
 chef_version '>= 12.1'
 
-depends 'packagecloud', '~> 0.2'
+depends 'packagecloud', '< 2.0'
 depends 'openvpn', '~> 2.1'
 
 supports 'ubuntu'
