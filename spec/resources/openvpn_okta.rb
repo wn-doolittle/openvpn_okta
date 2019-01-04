@@ -5,6 +5,9 @@ require_relative '../spec_helper'
 shared_context 'openvpn_okta' do
   step_into :openvpn_okta
 
+  default_attributes['openvpn']['fs_prefix'] = ''
+  default_attributes['openvpn']['config']['user'] = 'nobody'
+  default_attributes['openvpn']['config']['group'] = 'nobody'
   default_attributes['test'] = {}
 
   recipe do
@@ -33,6 +36,10 @@ shared_context 'openvpn_okta' do
 
       shared_examples_for 'any valid property set' do
         it do
+          is_expected.to create_directory('/etc/openvpn').with(recursive: true)
+        end
+
+        it do
           expect(chef_run.openvpn_conf('server').config['plugin']).to eq(
             [
               '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
@@ -55,7 +62,7 @@ shared_context 'openvpn_okta' do
         end
 
         it do
-          exp = <<-EXP.gsub(/^ +/, '')
+          exp = <<-EXP.gsub(/^ +/, '').strip
             # This file is managed by Chef.
             # Any manual changes will be overwritten.
             [OktaAPI]
@@ -80,7 +87,7 @@ shared_context 'openvpn_okta' do
         end
 
         it do
-          exp = <<-EXP.gsub(/^ +/, '')
+          exp = <<-EXP.gsub(/^ +/, '').strip
             # This file is managed by Chef.
             # Any manual changes will be overwritten.
             [OktaAPI]
@@ -106,7 +113,7 @@ shared_context 'openvpn_okta' do
         end
 
         it do
-          exp = <<-EXP.gsub(/^ +/, '')
+          exp = <<-EXP.gsub(/^ +/, '').strip
             # This file is managed by Chef.
             # Any manual changes will be overwritten.
             [OktaAPI]
@@ -132,7 +139,7 @@ shared_context 'openvpn_okta' do
         end
 
         it do
-          exp = <<-EXP.gsub(/^ +/, '')
+          exp = <<-EXP.gsub(/^ +/, '').strip
             # This file is managed by Chef.
             # Any manual changes will be overwritten.
             [OktaAPI]
@@ -157,7 +164,7 @@ shared_context 'openvpn_okta' do
         end
 
         it do
-          exp = <<-EXP.gsub(/^ +/, '')
+          exp = <<-EXP.gsub(/^ +/, '').strip
             # This file is managed by Chef.
             # Any manual changes will be overwritten.
             [OktaAPI]
@@ -191,6 +198,7 @@ shared_context 'openvpn_okta' do
 
       it { expect(chef_run.openvpn_conf('server')).to eq(nil) }
       it { is_expected.to delete_file('/etc/openvpn/okta_openvpn.ini') }
+      it { is_expected.to_not create_directory('/etc/openvpn') }
 
       it do
         is_expected.to delete_directory('/etc/openvpn/tmp')

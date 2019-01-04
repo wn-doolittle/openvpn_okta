@@ -41,8 +41,12 @@ class Chef
       property :username_suffix, String
       property :allow_untrusted_users, [TrueClass, FalseClass]
 
-      property :user, String, default: lazy { node['openvpn']['user'] }
-      property :group, String, default: lazy { node['openvpn']['group'] }
+      property :user,
+               String,
+               default: lazy { node['openvpn']['config']['user'] }
+      property :group,
+               String,
+               default: lazy { node['openvpn']['config']['group'] }
 
       #
       # If the resource is to be enabled, shove the plugin into the root run
@@ -65,9 +69,10 @@ class Chef
       # add the Okta plugin to its config.
       #
       def enable_plugin_shim!
+        create_conf_dir!
         srvr = declare_resource(:openvpn_conf, 'server')
         srvr.sensitive(true)
-        conf = srvr.config && srvr.config.dup || {}
+        conf = srvr.config.to_h.dup
         conf['plugin'] ||= []
         conf['plugin'] << plugin_str
         srvr.config(conf)
@@ -81,9 +86,20 @@ class Chef
         srvr = find_resource(:openvpn_conf, 'server')
         return unless srvr && srvr.config && srvr.config['plugin']
 
-        conf = srvr.config.dup
+        create_conf_dir!
+        conf = srvr.config.to_h.dup
         conf['plugin'].delete(plugin_str)
         srvr.config(conf)
+      end
+
+      #
+      # Declare a resource to create the OpenVPN config directory. This is
+      # needed because the openvpn cookbook's version lives in a recipe; the
+      # openvpn_conf resource doesn't check first that its directory exists.
+      #
+      def create_conf_dir!
+        dir = ::File.join(node['openvpn']['fs_prefix'], '/etc/openvpn')
+        declare_resource(:directory, dir).recursive(true)
       end
 
       #

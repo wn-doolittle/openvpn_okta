@@ -12,6 +12,7 @@ describe 'openvpn_okta::debian' do
   context 'the :install action' do
     default_attributes['test']['action'] = :install
 
+    it { is_expected.to periodic_apt_update('default') }
     it { is_expected.to install_package('gnupg') }
     it { is_expected.to install_package('ca-certificates') }
     it { is_expected.to nothing_execute('update-ca-certificates --fresh') }

@@ -7,6 +7,8 @@ describe 'openvpn_okta::rhel' do
 
   platform 'centos'
 
+  default_attributes['yum-epel']['repos'] = []
+
   it_behaves_like 'any platform'
 
   context 'the :install action' do
@@ -19,6 +21,8 @@ describe 'openvpn_okta::rhel' do
       is_expected.to create_packagecloud_repo('socrata-platform/okta-openvpn')
         .with(type: 'rpm')
     end
+
+    it { is_expected.to include_recipe('yum-epel') }
   end
 
   context 'the :remove action' do
