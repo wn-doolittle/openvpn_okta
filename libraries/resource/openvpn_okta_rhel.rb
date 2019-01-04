@@ -34,7 +34,9 @@ class Chef
       #
       action :install do
         package 'gnupg'
+        package 'ca-certificates'
         packagecloud_repo('socrata-platform/okta-openvpn') { type 'rpm' }
+        include_recipe 'yum-epel'
         super()
       end
 

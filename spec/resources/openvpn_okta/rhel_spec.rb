@@ -13,6 +13,7 @@ describe 'openvpn_okta::rhel' do
     default_attributes['test']['action'] = :install
 
     it { is_expected.to install_package('gnupg') }
+    it { is_expected.to install_package('ca-certificates') }
 
     it do
       is_expected.to create_packagecloud_repo('socrata-platform/okta-openvpn')

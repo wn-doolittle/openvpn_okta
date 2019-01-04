@@ -13,6 +13,13 @@ describe 'openvpn_okta::debian' do
     default_attributes['test']['action'] = :install
 
     it { is_expected.to install_package('gnupg') }
+    it { is_expected.to install_package('ca-certificates') }
+    it { is_expected.to nothing_execute('update-ca-certificates --fresh') }
+
+    it do
+      expect(chef_run.execute('update-ca-certificates --fresh'))
+        .to subscribe_to('package[ca-certificates]').on(:run).immediately
+    end
 
     it do
       is_expected.to create_packagecloud_repo('socrata-platform/okta-openvpn')

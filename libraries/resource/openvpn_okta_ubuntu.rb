@@ -33,7 +33,20 @@ class Chef
       # Install the OpenVPN Okta plugin.
       #
       action :install do
+        apt_update 'default'
         package 'gnupg'
+        package 'ca-certificates'
+
+        # Some platforms that have updated to OpenSSL 1.1 have started making
+        # calls to `openssl rehash` in ca-certificates's postinst script. For
+        # an example, see `/usr/sbin/update-ca-certificates` on Ubuntu 18.04.
+        # Because Chef's package resource (as of 2019-01-04) prepends
+        # `/opt/chef/embedded/bin` to the PATH, its OpenSSL 1.0 takes over and
+        # the postinst script exits without enabling any certs.
+        execute 'update-ca-certificates --fresh' do
+          action :nothing
+          subscribes :run, 'package[ca-certificates]', :immediately
+        end
         packagecloud_repo('socrata-platform/okta-openvpn') { type 'deb' }
         super()
       end

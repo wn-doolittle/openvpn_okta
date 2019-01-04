@@ -8,6 +8,7 @@ This file is used to list changes made in each version of the openvpn_okta cookb
 - Support the latest packagecloud cookbook
 - Upgrade to the latest openvpn cookbook
 - Ensure gnupg is installed before trying to configure the repo
+- Ensure CA certs are installed and configured before configuring the repo
 
 ## 0.1.0 (2016-10-11)
 
