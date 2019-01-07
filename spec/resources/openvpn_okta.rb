@@ -1,143 +1,46 @@
-# encoding: utf-8
 # frozen_string_literal: true
 
-require_relative '../resources'
+require_relative '../spec_helper'
 
-shared_context 'resources::openvpn_okta' do
-  include_context 'resources'
+shared_context 'openvpn_okta' do
+  step_into :openvpn_okta
 
-  %i(url token username_suffix allow_untrusted_users user group).each do |p|
-    let(p) { nil }
-  end
-  let(:resource) { 'openvpn_okta' }
-  let(:properties) do
-    {
-      url: url,
-      token: token,
-      username_suffix: username_suffix,
-      allow_untrusted_users: allow_untrusted_users,
-      user: user,
-      group: group
-    }
-  end
-  let(:name) { 'default' }
+  default_attributes['openvpn']['fs_prefix'] = ''
+  default_attributes['openvpn']['config']['user'] = 'nobody'
+  default_attributes['openvpn']['config']['group'] = 'nobody'
+  default_attributes['test'] = {}
 
-  let(:openvpn_group) { nil }
-
-  shared_context 'the default action (:install, :enable)' do
-    let(:url) { 'example.com' }
-    let(:token) { 'abc123' }
-  end
-
-  shared_context 'the :install action' do
-    let(:action) { :install }
-  end
-
-  shared_context 'the :remove action' do
-    let(:action) { :remove }
-  end
-
-  shared_context 'the :enable action' do
-    let(:action) { :enable }
-    let(:url) { 'example.com' }
-    let(:token) { 'abc123' }
-  end
-
-  shared_context 'the :disable action' do
-    let(:action) { :disable }
+  recipe do
+    openvpn_okta 'default' do
+      node['test'].each { |k, v| send(k, v) }
+    end
   end
 
   shared_examples_for 'any platform' do
-    context 'the default action (:install, :enable)' do
-      include_context description
+    context 'the default action' do
+      default_attributes['test']['url'] = 'example.com'
+      default_attributes['test']['token'] = 'abc123'
 
-      it 'declares a new openvpn_okta resource' do
-        expect(chef_run).to install_openvpn_okta(name)
-        expect(chef_run).to enable_openvpn_okta(name)
-      end
-
-      it 'installs the okta-openvpn package' do
-        expect(chef_run).to install_package('okta-openvpn')
-      end
-
-      it 'includes the openvpn cookbook' do
-        expect(chef_run).to include_recipe('openvpn')
-      end
-
-      it 'creates the OpenVPN temp dir' do
-        expect(chef_run).to create_directory('/etc/openvpn/tmp')
-          .with(user: 'nobody', group: openvpn_group)
-      end
-
-      it 'creates the OpenVPN ini file' do
-        expected = <<-EOH.gsub(/^ +/, '').strip
-          # This file is managed by Chef.
-          # Any manual changes will be overwritten.
-          [OktaAPI]
-          Url: example.com
-          Token: abc123
-        EOH
-        expect(chef_run).to create_file('/etc/openvpn/okta_openvpn.ini')
-          .with(content: expected)
-      end
-
-      it 'adds the Okta plugin to the OpenVPN config' do
-        expect(chef_run.openvpn_conf('server').plugins).to eq(
-          [
-            '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
-            "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
-            'tmp-dir "/etc/openvpn/tmp"'
-          ]
-        )
-      end
+      it { is_expected.to install_openvpn_okta('default') }
+      it { is_expected.to enable_openvpn_okta('default') }
     end
 
     context 'the :install action' do
-      include_context description
+      default_attributes['test']['action'] = :install
 
-      it 'declares a new openvpn_okta resource' do
-        expect(chef_run).to install_openvpn_okta(name)
-      end
-
-      it 'installs the okta-openvpn package' do
-        expect(chef_run).to install_package('okta-openvpn')
-      end
+      it { is_expected.to install_package('okta-openvpn') }
     end
 
     context 'the :enable action' do
-      include_context description
-
-      it 'declares a new openvpn_okta resource' do
-        expect(chef_run).to enable_openvpn_okta(name)
-      end
+      default_attributes['test']['action'] = :enable
 
       shared_examples_for 'any valid property set' do
-        it 'includes the openvpn cookbook' do
-          expect(chef_run).to include_recipe('openvpn')
+        it do
+          is_expected.to create_directory('/etc/openvpn').with(recursive: true)
         end
 
-        it 'creates the OpenVPN temp dir' do
-          expect(chef_run).to create_directory('/etc/openvpn/tmp')
-            .with(user: user || 'nobody', group: group || openvpn_group)
-        end
-
-        it 'creates the OpenVPN ini file' do
-          lines = [
-            '# This file is managed by Chef.',
-            '# Any manual changes will be overwritten.',
-            '[OktaAPI]',
-            'Url: example.com',
-            'Token: abc123'
-          ]
-          lines << "UsernameSuffix: #{username_suffix}" if username_suffix
-          lines << 'AllowUntrustedUsers: True' if allow_untrusted_users
-
-          expect(chef_run).to create_file('/etc/openvpn/okta_openvpn.ini')
-            .with(content: lines.join("\n"))
-        end
-
-        it 'adds the Okta plugin to the OpenVPN config' do
-          expect(chef_run.openvpn_conf('server').plugins).to eq(
+        it do
+          expect(chef_run.openvpn_conf('server').config['plugin']).to eq(
             [
               '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
               "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
@@ -147,80 +50,158 @@ shared_context 'resources::openvpn_okta' do
         end
       end
 
-      context 'all required properties set' do
+      context 'all required properties' do
+        default_attributes['test']['url'] = 'example.com'
+        default_attributes['test']['token'] = 'abc123'
+
         it_behaves_like 'any valid property set'
+
+        it do
+          is_expected.to create_directory('/etc/openvpn/tmp')
+            .with(user: 'nobody', group: 'nobody')
+        end
+
+        it do
+          exp = <<-EXP.gsub(/^ +/, '').strip
+            # This file is managed by Chef.
+            # Any manual changes will be overwritten.
+            [OktaAPI]
+            Url: example.com
+            Token: abc123
+          EXP
+          is_expected.to create_file('/etc/openvpn/okta_openvpn.ini')
+            .with(content: exp)
+        end
       end
 
       context 'an overridden username_suffix property' do
-        let(:username_suffix) { 'example.com' }
+        default_attributes['test']['url'] = 'example.com'
+        default_attributes['test']['token'] = 'abc123'
+        default_attributes['test']['username_suffix'] = 'example.com'
 
         it_behaves_like 'any valid property set'
+
+        it do
+          is_expected.to create_directory('/etc/openvpn/tmp')
+            .with(user: 'nobody', group: 'nobody')
+        end
+
+        it do
+          exp = <<-EXP.gsub(/^ +/, '').strip
+            # This file is managed by Chef.
+            # Any manual changes will be overwritten.
+            [OktaAPI]
+            Url: example.com
+            Token: abc123
+            UsernameSuffix: example.com
+          EXP
+          is_expected.to create_file('/etc/openvpn/okta_openvpn.ini')
+            .with(content: exp)
+        end
       end
 
       context 'an overridden allow_untrusted_users property' do
-        let(:allow_untrusted_users) { true }
+        default_attributes['test']['url'] = 'example.com'
+        default_attributes['test']['token'] = 'abc123'
+        default_attributes['test']['allow_untrusted_users'] = true
 
         it_behaves_like 'any valid property set'
+
+        it do
+          is_expected.to create_directory('/etc/openvpn/tmp')
+            .with(user: 'nobody', group: 'nobody')
+        end
+
+        it do
+          exp = <<-EXP.gsub(/^ +/, '').strip
+            # This file is managed by Chef.
+            # Any manual changes will be overwritten.
+            [OktaAPI]
+            Url: example.com
+            Token: abc123
+            AllowUntrustedUsers: True
+          EXP
+          is_expected.to create_file('/etc/openvpn/okta_openvpn.ini')
+            .with(content: exp)
+        end
       end
 
       context 'an overridden user property' do
-        let(:user) { 'me' }
+        default_attributes['test']['url'] = 'example.com'
+        default_attributes['test']['token'] = 'abc123'
+        default_attributes['test']['user'] = 'me'
 
         it_behaves_like 'any valid property set'
+
+        it do
+          is_expected.to create_directory('/etc/openvpn/tmp')
+            .with(user: 'me', group: 'nobody')
+        end
+
+        it do
+          exp = <<-EXP.gsub(/^ +/, '').strip
+            # This file is managed by Chef.
+            # Any manual changes will be overwritten.
+            [OktaAPI]
+            Url: example.com
+            Token: abc123
+          EXP
+          is_expected.to create_file('/etc/openvpn/okta_openvpn.ini')
+            .with(content: exp)
+        end
       end
 
       context 'an overridden group property' do
-        let(:group) { 'us' }
+        default_attributes['test']['url'] = 'example.com'
+        default_attributes['test']['token'] = 'abc123'
+        default_attributes['test']['group'] = 'us'
 
         it_behaves_like 'any valid property set'
+
+        it do
+          is_expected.to create_directory('/etc/openvpn/tmp')
+            .with(user: 'nobody', group: 'us')
+        end
+
+        it do
+          exp = <<-EXP.gsub(/^ +/, '').strip
+            # This file is managed by Chef.
+            # Any manual changes will be overwritten.
+            [OktaAPI]
+            Url: example.com
+            Token: abc123
+          EXP
+          is_expected.to create_file('/etc/openvpn/okta_openvpn.ini')
+            .with(content: exp)
+        end
       end
 
       context 'a missing url property' do
-        let(:url) { nil }
+        default_attributes['test']['token'] = 'abc123'
 
-        it 'raises an error' do
+        it do
           expect { chef_run }.to raise_error(Chef::Exceptions::ValidationFailed)
         end
       end
 
       context 'a missing token property' do
-        let(:token) { nil }
+        default_attributes['test']['url'] = 'example.com'
 
-        it 'raises an error' do
+        it do
           expect { chef_run }.to raise_error(Chef::Exceptions::ValidationFailed)
         end
       end
     end
 
-    context 'the :remove action' do
-      include_context description
-
-      it 'declares a new openvpn_okta resource' do
-        expect(chef_run).to remove_openvpn_okta(name)
-      end
-    end
-
     context 'the :disable action' do
-      include_context description
+      default_attributes['test']['action'] = :disable
 
-      it 'declares a new openvpn_okta resource' do
-        expect(chef_run).to disable_openvpn_okta(name)
-      end
+      it { expect(chef_run.openvpn_conf('server')).to eq(nil) }
+      it { is_expected.to delete_file('/etc/openvpn/okta_openvpn.ini') }
+      it { is_expected.to_not create_directory('/etc/openvpn') }
 
-      it 'includes the openvpn cookbook' do
-        expect(chef_run).to include_recipe('openvpn')
-      end
-
-      it 'does not add the Okta plugin to the OpenVPN config' do
-        expect(chef_run.openvpn_conf('server').plugins).to eq([])
-      end
-
-      it 'deletes the OpenVPN ini file' do
-        expect(chef_run).to delete_file('/etc/openvpn/okta_openvpn.ini')
-      end
-
-      it 'deletes the OpenVPN temp directory' do
-        expect(chef_run).to delete_directory('/etc/openvpn/tmp')
+      it do
+        is_expected.to delete_directory('/etc/openvpn/tmp')
           .with(recursive: true)
       end
     end

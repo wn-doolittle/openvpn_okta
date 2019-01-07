@@ -1,8 +1,8 @@
-# encoding: utf-8
 # frozen_string_literal: true
+
 #
-# Cookbook Name:: openvpn_okta
-# Library:: resource_openvpn_okta_rhel
+# Cookbook:: openvpn_okta
+# Library:: resource/openvpn_okta_rhel
 #
 # Copyright 2016, Socrata, Inc.
 #
@@ -19,13 +19,13 @@
 # limitations under the License.
 #
 
-require_relative 'resource_openvpn_okta'
+require_relative 'openvpn_okta'
 
 class Chef
   class Resource
     # A Chef custom resource for the OpenVPN Okta plugin for RHEL.
     #
-    # @author Jonathan Hartman <jonathan.hartman@socrata.com>
+    # @author Jonathan Hartman <jonathan.hartman@tylertech.com>
     class OpenvpnOktaRhel < OpenvpnOkta
       provides :openvpn_okta, platform_family: 'rhel'
 
@@ -33,7 +33,10 @@ class Chef
       # Install the OpenVPN Okta plugin.
       #
       action :install do
+        package 'gnupg'
+        package 'ca-certificates'
         packagecloud_repo('socrata-platform/okta-openvpn') { type 'rpm' }
+        include_recipe 'yum-epel'
         super()
       end
 

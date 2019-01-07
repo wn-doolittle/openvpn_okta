@@ -1,19 +1,56 @@
+dist: xenial
 language: ruby
+rvm: system
 
 branches:
   only:
     - master
 
 sudo: required
+
 services:
   - docker
 
 install:
-  - curl -L https://www.chef.io/chef/install.sh | sudo bash -s -- -P chefdk -c current
-  - chef exec bundle install --without=development
+  - curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -c current -P chefdk
+  - chef exec bundle install
 
-before_script:
-  - cp .kitchen.travis.yml .kitchen.local.yml
+env:
+  - SUITE=unit
+  - SUITE=default PLATFORM=ubuntu
+  - SUITE=default PLATFORM=centos
+  - SUITE=remove PLATFORM=ubuntu
+  - SUITE=remove PLATFORM=centos
 
 script:
-  - chef exec rake && chef exec kitchen test
+  - if test "$SUITE" = "unit"; then chef exec delivery local all; fi
+  - if test "$SUITE" != "unit"; then chef exec microwave test $SUITE-$PLATFORM; fi
+
+stages:
+  - name: test
+  - name: deploy
+    if: NOT type = cron AND branch = master
+
+jobs:
+  include:
+    - stage: deploy
+      env:
+      script: skip
+      before_deploy:
+        - openssl aes-256-cbc -K $encrypted_7890a38d852b_key -iv $encrypted_7890a38d852b_iv -in .travis/configs.tar.gz.enc -out .travis/configs.tar.gz -d
+        - tar xzf .travis/configs.tar.gz
+        - cp .travis/id_rsa ~/.ssh/
+        - chmod 0600 ~/.ssh/id_rsa
+        - git remote set-url origin git@github.com:socrata-cookbooks/openvpn_okta
+      deploy:
+        provider: script
+        script: rvm use system do chef exec stove --username socrata --key .travis/client.pem
+        skip_cleanup: true
+
+notifications:
+  slack:
+    on_failure: change
+    on_success: never
+    on_pull_requests: false
+    rooms:
+      - secure: HlHmXy4LOgJUV+Fle1tcQnqoBNJhSw48BXJZv36QxGgIrUJaUEq3jso9gtcAZZvnXZJ5fib80mFTirIrhVFrEZhRvKyJzsax+Gy7nZI/usjR+oibTeock0eZuGKvh98TtEQJPD2Ah2YpOOeszXmBhg00HAHkzFphkaK+K6JSpbdY/DeBh/0dO8qYluF23C6tuKKn6iDunOgSDAFCZLgHG7a7jkPu61VHPkPB2s/8rE/FB8+kOA87AcWWeSUWUM0r2qXzI4mVmea4EIBUChIY8D950CmRogKCXyB+8mAHHyGJmE46/4/shZPNTu5HDEBzRNxHgw+ZkvJhJiUu+ArepnhZ6CFH6d4oU86kuPEYLnxmemDDOjbEjAjaK6Dtzw8xr+Q8oDCV6/D8I0sGOCs37+zpzF6VrYP4quJev0BrzNg2+zfO1aWp0RESTCp3ezi/9uU4fpi8PTVegWQu99fvmj3u4IXyMPO6+VAxHrk/A4sEHeBfj3ngNFA3Mzu1SvkuAzhLMKVwhgIRulOE7K/tqLSMhD7z/MmxR0svuCK28KH85/i0CtSoBY5g4HTocre/PlmFfQuURcq4WwSE4hjcE681K+gw9LdUwDNM7kG7N1WJQQmArilQv+fExxqOB87Gh+UXbGUx0L4fiVom0eHASeNGkyp06vv3BN3hSV71Tpk=

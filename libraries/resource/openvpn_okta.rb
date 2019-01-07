@@ -1,8 +1,8 @@
-# encoding: utf-8
 # frozen_string_literal: true
+
 #
-# Cookbook Name:: openvpn_okta
-# Library:: resource_openvpn_okta
+# Cookbook:: openvpn_okta
+# Library:: resource/openvpn_okta
 #
 # Copyright 2016, Socrata, Inc.
 #
@@ -19,26 +19,34 @@
 # limitations under the License.
 #
 
-require 'chef/dsl/include_recipe'
+require 'chef/dsl/declare_resource'
 require 'chef/resource'
 
 class Chef
   class Resource
     # A Chef custom resource for the OpenVPN Okta plugin.
     #
-    # @author Jonathan Hartman <jonathan.hartman@socrata.com>
+    # @author Jonathan Hartman <jonathan.hartman@tylertech.com>
     class OpenvpnOkta < Resource
-      include Chef::DSL::IncludeRecipe
+      include Chef::DSL::DeclareResource
 
-      default_action %i(install enable)
+      provides :openvpn_okta do |_node|
+        false
+      end
+
+      default_action %i[install enable]
 
       property :url, String
       property :token, String
       property :username_suffix, String
       property :allow_untrusted_users, [TrueClass, FalseClass]
 
-      property :user, String, default: lazy { node['openvpn']['user'] }
-      property :group, String, default: lazy { node['openvpn']['group'] }
+      property :user,
+               String,
+               default: lazy { node['openvpn']['config']['user'] }
+      property :group,
+               String,
+               default: lazy { node['openvpn']['config']['group'] }
 
       #
       # If the resource is to be enabled, shove the plugin into the root run
@@ -57,21 +65,41 @@ class Chef
       end
 
       #
-      # Include the OpenVPN cookbook and immediatelyh add the Okta plugin to
-      # its openvpn_conf resource.
+      # Declare an openvpn_conf resource if one hasn't already been defined and
+      # add the Okta plugin to its config.
       #
       def enable_plugin_shim!
-        disable_plugin_shim!
-        resources(openvpn_conf: 'server').plugins << plugin_str
+        create_conf_dir!
+        srvr = declare_resource(:openvpn_conf, 'server')
+        srvr.sensitive(true)
+        conf = srvr.config.to_h.dup
+        conf['plugin'] ||= []
+        conf['plugin'] << plugin_str
+        srvr.config(conf)
       end
 
       #
-      # Include the OpenVPN cookbook and immediately remove the Okta plugin
-      # from its openvpn_conf resource.
+      # If an openvpn_conf resource exists, ensure the Okta plugin is removed
+      # from its config. Otherwise, do nothing.
       #
       def disable_plugin_shim!
-        include_recipe 'openvpn'
-        resources(openvpn_conf: 'server').plugins.delete(plugin_str)
+        srvr = find_resource(:openvpn_conf, 'server')
+        return unless srvr && srvr.config && srvr.config['plugin']
+
+        create_conf_dir!
+        conf = srvr.config.to_h.dup
+        conf['plugin'].delete(plugin_str)
+        srvr.config(conf)
+      end
+
+      #
+      # Declare a resource to create the OpenVPN config directory. This is
+      # needed because the openvpn cookbook's version lives in a recipe; the
+      # openvpn_conf resource doesn't check first that its directory exists.
+      #
+      def create_conf_dir!
+        dir = ::File.join(node['openvpn']['fs_prefix'], '/etc/openvpn')
+        declare_resource(:directory, dir).recursive(true)
       end
 
       #
@@ -99,7 +127,7 @@ class Chef
       # shim in the after_created method.
       #
       action :enable do
-        %i(url token).each do |p|
+        %i[url token].each do |p|
           if new_resource.send(p).nil?
             raise(Chef::Exceptions::ValidationFailed,
                   "A '#{p}' property is required for the :enable action")
