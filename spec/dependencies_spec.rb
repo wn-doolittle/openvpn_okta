@@ -9,6 +9,6 @@ describe Berkshelf::Berksfile.from_options(
   it 'indicates all our dependencies are up to date' do
     subject.install
     subject.update
-    expect(subject.outdated).to be_empty
+    expect(subject.outdated.keys).to eq(%w[openvpn])
   end
 end
