@@ -1,6 +1,5 @@
 dist: xenial
 language: ruby
-rvm: system
 
 branches:
   only:
@@ -44,7 +43,7 @@ jobs:
         - git remote set-url origin git@github.com:socrata-cookbooks/openvpn_okta
       deploy:
         provider: script
-        script: rvm use system do chef exec stove --username socrata --key .travis/client.pem
+        script: chef exec stove --username socrata --key .travis/client.pem
         skip_cleanup: true
 
 notifications:
