@@ -47,6 +47,9 @@ class Chef
       property :group,
                String,
                default: lazy { node['openvpn']['config']['group'] }
+      property :config,
+               Hash,
+               default: lazy { node['openvpn']['config'] }
 
       #
       # If the resource is to be enabled, shove the plugin into the root run
@@ -57,38 +60,44 @@ class Chef
         Array(action).each do |act|
           case act
           when :enable
-            enable_plugin_shim!
+            enable_shim!
+            # After we enable the shim, we want to ensure that the attributes
+            # remain so that as other `openvpn` recipes run, they continue to
+            # include the plugin values.
+            node.override['openvpn']['config']['plugin'] = plugin_str
+            node.override['openvpn']['config']['tmp-dir'] = tmp_dir_str
           when :disable
-            disable_plugin_shim!
+            disable_shim!
           end
         end
       end
 
       #
-      # Declare an openvpn_conf resource if one hasn't already been defined and
-      # add the Okta plugin to its config.
+      # Edit an openvpn_conf resource and if one hasn't already been defined
+      # create it and add the Okta plugin and the tmp-dir to its config.
       #
-      def enable_plugin_shim!
-        create_conf_dir!
-        srvr = declare_resource(:openvpn_conf, 'server')
-        srvr.sensitive(true)
-        conf = srvr.config.to_h.dup
-        conf['plugin'] ||= []
-        conf['plugin'] << plugin_str
-        srvr.config(conf)
+      def enable_shim!
+        create_supporting_dirs!
+        conf = config.to_h.dup
+        conf['plugin'] = plugin_str
+        conf['tmp-dir'] = tmp_dir_str
+
+        declare_resource(:openvpn_conf, 'server') do
+          config conf
+        end
       end
 
       #
       # If an openvpn_conf resource exists, ensure the Okta plugin is removed
       # from its config. Otherwise, do nothing.
       #
-      def disable_plugin_shim!
+      def disable_shim!
         srvr = find_resource(:openvpn_conf, 'server')
         return unless srvr && srvr.config && srvr.config['plugin']
 
-        create_conf_dir!
-        conf = srvr.config.to_h.dup
-        conf['plugin'].delete(plugin_str)
+        conf = config.to_h.dup
+        conf.delete('plugin')
+        conf.delete('tmp-dir')
         srvr.config(conf)
       end
 
@@ -96,10 +105,14 @@ class Chef
       # Declare a resource to create the OpenVPN config directory. This is
       # needed because the openvpn cookbook's version lives in a recipe; the
       # openvpn_conf resource doesn't check first that its directory exists.
+      # After the config dir has been created, ensure the creation of the
+      # tmp dir which is required for the plugin to function properly
       #
-      def create_conf_dir!
-        dir = ::File.join(node['openvpn']['fs_prefix'], '/etc/openvpn')
-        declare_resource(:directory, dir).recursive(true)
+      def create_supporting_dirs!
+        %w[openvpn openvpn/tmp].each do |dir_str|
+          dir = ::File.join(node['openvpn']['fs_prefix'], "/etc/#{dir_str}")
+          declare_resource(:directory, dir)
+        end
       end
 
       #
@@ -110,8 +123,17 @@ class Chef
       #
       def plugin_str
         '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
-          "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
-          'tmp-dir "/etc/openvpn/tmp"'
+          '/usr/lib/openvpn/plugins/okta/okta_openvpn.py'
+      end
+
+      #
+      # Return the tmp-dir string that gets added to or removed from the
+      # openvpn_conf resource to when enabling or disabling the Okta plugin.
+      #
+      # @return [String] the tmp-dir string
+      #
+      def tmp_dir_str
+        '/etc/openvpn/tmp'
       end
 
       #
@@ -145,13 +167,10 @@ class Chef
                    '[OktaAPI]',
                    "Url: #{new_resource.url}",
                    "Token: #{new_resource.token}"]
-          if new_resource.username_suffix
-            lines << "UsernameSuffix: #{new_resource.username_suffix}"
-          end
-          if new_resource.allow_untrusted_users
-            lines << 'AllowUntrustedUsers: True'
-          end
+          lines << "UsernameSuffix: #{new_resource.username_suffix}" if new_resource.username_suffix
+          lines << 'AllowUntrustedUsers: True' if new_resource.allow_untrusted_users
           content lines.join("\n")
+          sensitive true
         end
       end
 

@@ -11,7 +11,7 @@ services:
   - docker
 
 install:
-  - curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -c current -P chefdk
+  - curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -c current -P chef-workstation
   - chef exec bundle install
 
 env:

@@ -28,7 +28,7 @@ control 'openvpn_okta' do
       Regexp.new('^plugin /usr/lib/openvpn/plugins/okta/' \
                  'defer_simple\\.so ' \
                  '/usr/lib/openvpn/plugins/okta/okta_openvpn\.py$'),
-      Regexp.new('^tmp-dir "/etc/openvpn/tmp"$')
+      Regexp.new('^tmp-dir /etc/openvpn/tmp$')
     ].each do |r|
       its(:content) { should match(r) }
     end

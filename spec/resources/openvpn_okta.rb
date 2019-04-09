@@ -36,16 +36,19 @@ shared_context 'openvpn_okta' do
 
       shared_examples_for 'any valid property set' do
         it do
-          is_expected.to create_directory('/etc/openvpn').with(recursive: true)
+          is_expected.to create_directory('/etc/openvpn')
         end
 
         it do
           expect(chef_run.openvpn_conf('server').config['plugin']).to eq(
-            [
-              '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
-              "/usr/lib/openvpn/plugins/okta/okta_openvpn.py\n" \
-              'tmp-dir "/etc/openvpn/tmp"'
-            ]
+            '/usr/lib/openvpn/plugins/okta/defer_simple.so ' \
+              '/usr/lib/openvpn/plugins/okta/okta_openvpn.py'
+          )
+        end
+
+        it do
+          expect(chef_run.openvpn_conf('server').config['tmp-dir']).to eq(
+            '/etc/openvpn/tmp'
           )
         end
       end
@@ -199,10 +202,10 @@ shared_context 'openvpn_okta' do
       it { expect(chef_run.openvpn_conf('server')).to eq(nil) }
       it { is_expected.to delete_file('/etc/openvpn/okta_openvpn.ini') }
       it { is_expected.to_not create_directory('/etc/openvpn') }
+      it { is_expected.to_not create_directory('/etc/openvpn/tmp') }
 
       it do
         is_expected.to delete_directory('/etc/openvpn/tmp')
-          .with(recursive: true)
       end
     end
   end
