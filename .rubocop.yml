@@ -1,2 +1,3 @@
 inherit_from:
+  - .rubocop_todo.yml
   - https://raw.githubusercontent.com/socrata-cookbooks/shared/master/files/.rubocop.yml

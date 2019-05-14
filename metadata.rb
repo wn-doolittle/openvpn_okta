@@ -6,7 +6,7 @@ maintainer_email 'sysadmin@socrata.com'
 license 'Apache-2.0'
 description 'Installs/configures the OpenVPN Okta plugin'
 long_description 'Installs/configures the OpenVPN Okta plugin'
-version '1.0.1'
+version '1.1.0'
 chef_version '>= 12.1'
 
 source_url 'https://github.com/socrata-cookbooks/openvpn_okta'
