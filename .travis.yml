@@ -11,15 +11,16 @@ services:
   - docker
 
 install:
-  - curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -c current -P chef-workstation
+  - curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -c current -P chefdk -v 3
   - chef exec bundle install
 
 env:
-  - SUITE=unit
-  - SUITE=default PLATFORM=ubuntu
-  - SUITE=default PLATFORM=centos
-  - SUITE=remove PLATFORM=ubuntu
-  - SUITE=remove PLATFORM=centos
+  matrix:
+    - SUITE=unit
+    - SUITE=default PLATFORM=ubuntu
+    - SUITE=default PLATFORM=centos
+    - SUITE=remove PLATFORM=ubuntu
+    - SUITE=remove PLATFORM=centos
 
 script:
   - if test "$SUITE" = "unit"; then chef exec delivery local all; fi
