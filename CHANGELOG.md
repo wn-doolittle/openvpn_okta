@@ -2,6 +2,10 @@
 
 This file is used to list changes made in each version of the openvpn_okta cookbook.
 
+## 1.1.1 (2020-02-11)
+
+- Install `chefdk@v3` instead of `chef-workstation`.
+
 ## 1.0.1 (2019-01-22)
 
 - Remove 'rvm: system' from the TravisCI config

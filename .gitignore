@@ -34,3 +34,9 @@ Policyfile.lock.json
 # TravisCI
 .travis/*
 !.travis/configs.tar.gz.enc
+
+# Dev Environment
+.gems/
+.envrc
+.rbenv-gemsets
+.ruby-version

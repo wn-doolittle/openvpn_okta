@@ -93,7 +93,7 @@ class Chef
       #
       def disable_shim!
         srvr = find_resource(:openvpn_conf, 'server')
-        return unless srvr && srvr.config && srvr.config['plugin']
+        return unless srvr &.config && srvr.config['plugin']
 
         conf = config.to_h.dup
         conf.delete('plugin')
