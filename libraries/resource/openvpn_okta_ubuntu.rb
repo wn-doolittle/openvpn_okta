@@ -19,6 +19,8 @@
 # limitations under the License.
 #
 
+include_recipe 'build-essential::default'
+
 require_relative 'openvpn_okta'
 
 class Chef
@@ -53,8 +55,6 @@ class Chef
           packagecloud_repo('socrata-platform/okta-openvpn') { type 'deb' }
           super()
         else
-          include_recipe 'build-essential::default'
-
           git_repo = node['openvpn_okta']['git_repo']
           build_dir = '/tmp/openvpn_okta'
 
