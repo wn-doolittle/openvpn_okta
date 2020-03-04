@@ -68,7 +68,12 @@ class Chef
             cwd build_dir
             code 'make install'
 
-            notifies :upgrade, "pip_requirements[#{build_dir}/requirements.txt]", :immediately
+            notifies :run, "execute[install_openvpn_okta_reqs]", :immediately
+          end
+
+          execute 'install_openvpn_okta_reqs' do
+            action :nothing
+            command "pip install -r #{build_dir}/requirements.txt"
           end
 
           pip_requirements "#{build_dir}/requirements.txt"
