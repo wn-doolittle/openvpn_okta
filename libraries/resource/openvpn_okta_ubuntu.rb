@@ -19,8 +19,6 @@
 # limitations under the License.
 #
 
-include_recipe 'build-essential::default'
-
 require_relative 'openvpn_okta'
 
 class Chef
