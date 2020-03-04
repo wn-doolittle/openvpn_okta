@@ -53,8 +53,6 @@ class Chef
           packagecloud_repo('socrata-platform/okta-openvpn') { type 'deb' }
           super()
         else
-          python_runtime '2'
-
           git_repo = node['openvpn_okta']['git_repo']
           build_dir = '/tmp/openvpn_okta'
 
@@ -75,8 +73,6 @@ class Chef
             action :nothing
             command "pip install -r #{build_dir}/requirements.txt"
           end
-
-          pip_requirements "#{build_dir}/requirements.txt"
         end
       end
 
