@@ -54,7 +54,7 @@ class Chef
           super()
         else
           git_repo = node['openvpn_okta']['git_repo']
-          build_dir = '/tmp/build/openvpn_okta'
+          build_dir = '/tmp/openvpn_okta'
 
           git build_dir do
             repository git_repo
