@@ -19,8 +19,6 @@
 # limitations under the License.
 #
 
-include_recipe 'build-essential::default'
-
 attrs = node['openvpn_okta']
 
 openvpn_okta 'default' do

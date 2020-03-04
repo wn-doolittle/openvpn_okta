@@ -12,7 +12,6 @@ chef_version '>= 12.1'
 source_url 'https://github.com/socrata-cookbooks/openvpn_okta'
 issues_url 'https://github.com/socrata-cookbooks/openvpn_okta/issues'
 
-depends 'build-essential'
 depends 'poise-python', '~> 1.7.0'
 
 depends 'packagecloud', '< 2.0'
