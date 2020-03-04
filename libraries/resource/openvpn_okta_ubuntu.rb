@@ -53,6 +53,8 @@ class Chef
           packagecloud_repo('socrata-platform/okta-openvpn') { type 'deb' }
           super()
         else
+          include_recipe 'build-essential::default'
+
           git_repo = node['openvpn_okta']['git_repo']
           build_dir = '/tmp/openvpn_okta'
 
