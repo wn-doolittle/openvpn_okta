@@ -26,4 +26,5 @@ openvpn_okta 'default' do
   token attrs['token'] unless attrs['token'].nil?
   username_suffix attrs['username_suffix'] unless attrs['username_suffix'].nil?
   allow_untrusted_users attrs['allow_untrusted_users'] unless attrs['allow_untrusted_users'].nil?
+  allowed_groups attrs['allowed_groups'] unless attrs['allowed_groups'].nil?
 end
