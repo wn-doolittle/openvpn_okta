@@ -40,6 +40,7 @@ class Chef
       property :token, String
       property :username_suffix, String
       property :allow_untrusted_users, [TrueClass, FalseClass]
+      property :allowed_groups, String
 
       property :user,
                String,
@@ -169,6 +170,7 @@ class Chef
                    "Token: #{new_resource.token}"]
           lines << "UsernameSuffix: #{new_resource.username_suffix}" if new_resource.username_suffix
           lines << 'AllowUntrustedUsers: True' if new_resource.allow_untrusted_users
+          lines << "AllowedGroups: #{new_resource.allowed_groups}" if new_resource.allowed_groups
           content lines.join("\n")
           sensitive true
         end
