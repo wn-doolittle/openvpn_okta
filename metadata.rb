@@ -13,7 +13,7 @@ source_url 'https://github.com/socrata-cookbooks/openvpn_okta'
 issues_url 'https://github.com/socrata-cookbooks/openvpn_okta/issues'
 
 depends 'packagecloud', '< 2.0'
-depends 'openvpn', '~> 3.0'
+depends 'openvpn', '~> 5.0'
 depends 'yum-epel', '< 4.0'
 
 supports 'ubuntu', '>= 14.04'
