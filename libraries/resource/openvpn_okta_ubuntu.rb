@@ -58,7 +58,7 @@ class Chef
 
           git build_dir do
             repository git_repo
-            notifies :run, '', :immediately
+            notifies :run, 'bash[make_openvpn_okta]', :immediately
           end
 
           bash 'make_openvpn_okta' do
